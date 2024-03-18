@@ -6,9 +6,8 @@ import string
 # Record the start time
 start_time = time.time()
 
-
-input_file_path = '/home/odoo/Documents/wibtec/PP-1231/fs_client/x_fs_client.csv'
-update_file_path = '/home/odoo/Documents/wibtec/PP-1231/fs_client/x_fs_client_update.csv'
+input_file_path = 'x_fs_client.csv'
+update_file_path = 'x_fs_client_update.csv'
 
 row_count = 0
 col_count = 0
@@ -16,14 +15,14 @@ new_row_count = 0
 new_col_count = 0
 
 chunk_size = 100000  # Adjust the chunk size based on your available memory
-empty_columns_set = set() # Defined empty cols set 
+empty_columns_set = set()  # Defined empty cols set
 
-for chunk in pd.read_csv(input_file_path, encoding='latin1', chunksize=chunk_size,low_memory=False):
-    print("\n\n chunk >> ",  len(chunk))
+for chunk in pd.read_csv(input_file_path, encoding='latin1', chunksize=chunk_size, low_memory=False):
+    print("\n\n chunk >> ", len(chunk))
     # print("\n\n list col >> ",list(chunk.columns))
     print("\n\n count col >> ", len(chunk.columns))
-    row_count += len(chunk)  
-    col_count = max(col_count, len(chunk.columns))  
+    row_count += len(chunk)
+    col_count = max(col_count, len(chunk.columns))
 
     # Check for empty columns
     empty_columns_set.update(chunk.columns[chunk.isnull().all()])
@@ -38,11 +37,12 @@ print(f'Count of empty columns in original input CSV file: {len(empty_columns_se
 print(f'Count of Non empty columns in original input CSV file: {len(non_empty_columns_set)}')  # 233
 
 new_df = pd.DataFrame()
-for new_chunk in pd.read_csv(input_file_path, encoding='latin1', chunksize=chunk_size, usecols=non_empty_columns_set,low_memory=False ):
+for new_chunk in pd.read_csv(input_file_path, encoding='latin1', chunksize=chunk_size, usecols=non_empty_columns_set,
+                             low_memory=False):
     new_df = pd.concat([new_df, new_chunk], ignore_index=True)
-    new_row_count += len(new_chunk)  
-    new_col_count = max(new_col_count, len(new_chunk.columns)) 
-    print("\n\n new_chunk >> ",  len(new_chunk))
+    new_row_count += len(new_chunk)
+    new_col_count = max(new_col_count, len(new_chunk.columns))
+    print("\n\n new_chunk >> ", len(new_chunk))
     # print("\n\n new_chunk list col  >> ",  list(new_chunk.columns))
     print("\n\n new_chunk col >> ", len(new_chunk.columns))
 
@@ -159,7 +159,7 @@ print(f'\n\n Count of the columns_to_keep : {len(columns_to_keep)}')
 new_df = new_df[columns_to_keep]
 
 new_header = [
-   'id',
+    'id',
     'create_date',
     'write_date',
     'first_name',
@@ -271,7 +271,6 @@ print('\n************ Updated Header CSV file ************\n')
 
 print(f'Total count of the rows in update CSV file: {len(new_df)}')  # 1,74,184 rows
 print(f'Total count of the columns in update CSV file: {len(new_df.columns)}')  # 162 Columns
-    
 
 # Record the end time
 end_time = time.time()

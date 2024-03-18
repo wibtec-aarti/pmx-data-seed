@@ -1,20 +1,18 @@
+import csv
+import logging
+import time
+from datetime import datetime
 
 import psycopg2
-import csv
-import time
 from psycopg2 import sql
-import logging
-from datetime import datetime, date
-
 
 logging.basicConfig(level=logging.INFO)
 
-
 # Connection parameters
-dbname = "v16_PMX_07_03_2024"
+dbname = "v16e-pmx-test"
 
 # Path to the CSV file
-csv_file = "/home/odoo/Documents/wibtec/PP-1231/fs_client/x_fs_client_output.csv"
+csv_file = "x_fs_client_output.csv"
 
 # Record the start time
 start_time = time.time()
@@ -23,43 +21,39 @@ batch_size = 2000
 # Establish connection to the database
 try:
     conn = psycopg2.connect(dbname=dbname)
-    
     logging.info("Connection established successfully!")
-
     # Create a cursor
     cur = conn.cursor()
-
     # Read data from CSV and insert into the database
     with open(csv_file, "r", encoding="latin1") as file:
         reader = csv.DictReader(file)
-        num = 0        
-
-        skip_id_list = ['171119','171041','151763','151828','151968',
-            '152022','170722','151862','171019','170767','170399','170982','171016',
-            '170944','151842']
+        num = 0
+        skip_id_list = [
+            '171119', '171041', '151763', '151828', '151968',
+            '152022', '170722', '151862', '171019', '170767',
+            '170399', '170982', '171016', '170944', '151842'
+        ]
 
         for row in reader:
             if row['id'] in skip_id_list:
                 continue
-
             if not row['id'].isdigit():
                 continue  # Skip records with invalid 'id'
 
             num += 1
-            print(f" Row Number {num} & Row ID {row['id']}" )
+            print(f" Row Number {num} & Row ID {row['id']}")
 
-            #EM 
+            # EM
             # country_code/country_of_residence and company_code
-        
             row['client_categorization'] = 'retail'
-            row['region'] = 'EU' #char
-            row['company_id'] = 2 #M2O
-            
+            # row['region'] = 'EU' #char
+            # row['company_id'] = 2 #M2O
+
             datetime_columns = [
-                'cognito_result_date', 
+                'cognito_result_date',
                 'registration_date',
             ]
-            
+
             float_columns = [
                 'total_collateral',
                 'free_collateral',
@@ -89,7 +83,7 @@ try:
             ]
 
             int_columns = [
-                'risk_score', 
+                'risk_score',
                 'result_for_residence_country',
                 'result_for_sanction_list',
                 'result_for_industry',
@@ -98,7 +92,7 @@ try:
                 'result_for_affiliation',
                 'result_for_pep',
             ]
-            
+
             for col, value in row.items():
                 if value == '':
                     row[col] = None
@@ -110,12 +104,12 @@ try:
                     row[col] = value if value is not None and value != '' else 'Unknown'
                 elif col in datetime_columns:
                     try:
-                        format_str = '%Y-%m-%d %H:%M:%S' 
+                        format_str = '%Y-%m-%d %H:%M:%S'
                         row[col] = datetime.strptime(value, format_str) if value else None
                     except ValueError:
                         print(f"Error parsing date for column '{col}' with value '{value}'. Check the date format.")
-                        row[col] = None 
-    
+                        row[col] = None
+
             insert_sql = sql.SQL("INSERT INTO fs_client ({}) VALUES ({}) RETURNING id").format(
                 sql.SQL(', ').join(map(sql.Identifier, row.keys())),
                 sql.SQL(', ').join(sql.Placeholder() * len(row))
@@ -124,9 +118,9 @@ try:
             # Execute the INSERT statement with the values from the current row
             cur.execute(insert_sql, list(row.values()))
             # inserted_id = cur.fetchone()[0]
-            
-            if num == 5:
-                break
+            #
+            # if num == 5:
+            #     break
 
             if num % batch_size == 0:
                 conn.commit()
@@ -139,7 +133,7 @@ try:
 
     # Calculate the execution duration
     execution_duration = end_time - start_time
-    
+
     # Convert execution time to minutes
     execution_duration_minutes = execution_duration / 60
     print(f'Time taken: {execution_duration_minutes:.2f} minutes')
