@@ -27,15 +27,9 @@ with open(csv_file, "r", encoding="latin1") as file:
 	num = 0
 	for row in reader:
 		num += 1
-		print(f" Row Number {num} & Row ID {row['id']}" )
-		
-		print("row.get('pmx_id')>>>", row.get('pmx_id'))
-		
+		print(f" Row Number {num} & Row ID {row['id']}" )	
 		# Set default values for specific columns
 		row['client_categorization'] = 'retail'
-		
-		country_of_residence = row.get('country_of_residence')
-		
 		row['region'] = 'EU'
 		
 
@@ -111,12 +105,10 @@ with open(csv_file, "r", encoding="latin1") as file:
 		# Insert row into the database
 		try:
 			eu_fs_client_id = models.execute_kw(db_name, uid, db_pwd, "eu.fs.client", "create", [row])
-			print("\nCreated eu fs_client_id:", eu_fs_client_id)
+			# print("\nCreated eu fs_client_id:", eu_fs_client_id)
 		except Exception as e:
 			print(f"Error inserting row: {e}")
 
-		if num == 1:
-			break
 # Record the end time
 end_time = datetime.now()
 
