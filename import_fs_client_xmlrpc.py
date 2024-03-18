@@ -31,6 +31,7 @@ with open(csv_file, "r", encoding="latin1") as file:
 		# Set default values for specific columns
 		row['client_categorization'] = 'retail'
 		row['region'] = 'EU'
+		row['old_eu_fs_client_id'] = int(row['id'])
 		
 
 		skip_id_list = ['171119','171041','151763','151828','151968',
