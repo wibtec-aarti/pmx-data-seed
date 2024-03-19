@@ -3,17 +3,17 @@ import csv
 from datetime import datetime
 
 # Define XML-RPC connection parameters
-url = "http://private-test-pmx-coresystems-do-user-2412463-0.c.db.ondigitalocean.com"
+url = "https://test-coresystems.pmx.online"
 db_name = "Master"
-db_user = "odoo"
-db_pwd = "AVNS_0byMv122u7uygOUkk4A"
+db_user = "yusuf@wibtec.com"
+db_pwd = "yusuf_pass"
 
 # Establish XML-RPC connection
 common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common", allow_none=True)
 uid = common.authenticate(db_name, db_user, db_pwd, {})
 models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object", allow_none=True)
 
-print("\nConnected to the database...")
+print("\nConnected to the database !!!!!")
 
 # Path to the CSV file
 csv_file = "x_fs_client_output.csv"
@@ -73,21 +73,16 @@ with open(csv_file, "r", encoding="utf-8") as file:
         row["client_categorization"] = "retail"
         row["region"] = "EU"
 
-        
-
         # Convert the company_id to integer if it's a string
-        if isinstance(row['company_id'], str):
-            row['company_id'] = int(row['company_id'])
+        if isinstance(row["company_id"], str):
+            row["company_id"] = int(row["company_id"])
 
         # Update the company_id
-        if row['company_id'] == 5:
-            row['company_id'] = 2
-        elif row['company_id'] == 13:
-            row['company_id'] = 1
+        if row["company_id"] == 5:
+            row["company_id"] = 2
+        elif row["company_id"] == 13:
+            row["company_id"] = 1
 
-      
-        
-        
         datetime_columns = ["cognito_result_date", "registration_date"]
 
         float_columns = [
@@ -147,12 +142,10 @@ with open(csv_file, "r", encoding="utf-8") as file:
                         f"Error parsing date for column '{col}' with value '{value}'. Check the date format."
                     )
                     row[col] = None
-          
+
         # Insert row into the database
         try:
-            models.execute_kw(
-                db_name, uid, db_pwd, "eu.fs.client", "create", [row]
-            )
+            models.execute_kw(db_name, uid, db_pwd, "eu.fs.client", "create", [row])
             fs_client_id = models.execute_kw(
                 db_name,
                 uid,
@@ -173,7 +166,6 @@ with open(csv_file, "r", encoding="utf-8") as file:
                 )
         except Exception as e:
             print(f"Error inserting row: {e}")
-
 
 # Record the end time
 end_time = datetime.now()
