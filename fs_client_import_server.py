@@ -1,6 +1,9 @@
 import xmlrpc.client
 import csv
 from datetime import datetime
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 # Define XML-RPC connection parameters
 url = "http://localhost:8069"
@@ -13,7 +16,7 @@ common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common", allow_none=True)
 uid = common.authenticate(db_name, db_user, db_pwd, {})
 models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object", allow_none=True)
 
-print("\nConnected to the database !!!!!")
+logging.info("\nConnected to the database !!!!!")
 
 # Path to the CSV file
 csv_file = "x_fs_client_output.csv"
@@ -44,7 +47,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
     num = 0
     for row in reader:
         num += 1
-        print(f" Row Number {num} & Row ID {row['id']}")
+        logging.info(f" Row Number {num} & Row ID {row['id']}")
 
         if not row["id"].isdigit():
             continue
@@ -138,7 +141,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
                     format_str = "%Y-%m-%d %H:%M:%S"
                     row[col] = datetime.strptime(value, format_str) if value else None
                 except ValueError:
-                    print(
+                    logging.info(
                         f"Error parsing date for column '{col}' with value '{value}'. Check the date format."
                     )
                     row[col] = None
@@ -165,7 +168,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
                     [[fs_client_id[0]["id"]], {"old_fs_client_id": row_id}]
                 )
         except Exception as e:
-            print(f"Error inserting row: {e}")
+            logging.info(f"Error inserting row: {e}")
 
 # Record the end time
 end_time = datetime.now()
@@ -173,4 +176,4 @@ end_time = datetime.now()
 # Calculate the execution duration
 execution_duration = end_time - start_time
 
-print(f"Time taken: {execution_duration.total_seconds():.2f} seconds")
+logging.info(f"Time taken: {execution_duration.total_seconds():.2f} seconds")
