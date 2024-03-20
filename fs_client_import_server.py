@@ -3,7 +3,7 @@ import csv
 from datetime import datetime
 
 # Define XML-RPC connection parameters
-url = "https://test-coresystems.pmx.online"
+url = "http://localhost:8069"
 db_name = "Master"
 db_user = "yusuf@wibtec.com"
 db_pwd = "yusuf_pass"
@@ -29,7 +29,7 @@ old_eu_fs_client_ids = models.execute_kw(
     "eu.fs.client",
     "search_read",
     [[["old_eu_fs_client_id", "!=", False]]],
-    {"fields": ["old_eu_fs_client_id"], "order": "id"},
+    {"fields": ["old_eu_fs_client_id"], "order": "id"}
 )
 
 
@@ -65,7 +65,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
             "170982",
             "171016",
             "170944",
-            "151842",
+            "151842"
         ]
         if row_id in skip_id_list or row_id in old_eu_fs_client_ids:
             continue
@@ -110,7 +110,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
             "apt_investing_in_financial_products_score",
             "apt_legal_entitys_risk_tolerance_score",
             "apt_derivatives_investment_last_year_score",
-            "apt_leveraged_investment_last_year_score",
+            "apt_leveraged_investment_last_year_score"
         ]
 
         int_columns = [
@@ -121,7 +121,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
             "result_for_mifid",
             "result_for_lead_origin",
             "result_for_affiliation",
-            "result_for_pep",
+            "result_for_pep"
         ]
 
         for col, value in row.items():
@@ -153,7 +153,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
                 "fs.client",
                 "search_read",
                 [[["pmx_id", "=", row["pmx_id"]]]],
-                {"fields": ["pmx_id"]},
+                {"fields": ["pmx_id"]}
             )
             if fs_client_id:
                 fs_client_id = models.execute_kw(
@@ -162,7 +162,7 @@ with open(csv_file, "r", encoding="utf-8") as file:
                     db_pwd,
                     "fs.client",
                     "write",
-                    [[fs_client_id[0]["id"]], {"old_fs_client_id": row_id}],
+                    [[fs_client_id[0]["id"]], {"old_fs_client_id": row_id}]
                 )
         except Exception as e:
             print(f"Error inserting row: {e}")
