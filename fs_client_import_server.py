@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 url = "https://test-coresystems.pmx.online/"
 db_name = "Master"
 db_user = "yusuf@wibtec.com"
-db_pwd = "yusuf_pass"
+db_pwd = ""
 
 # Establish XML-RPC connection
 common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common", allow_none=True)
