@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # Define XML-RPC connection parameters
-url = "http://localhost:8069"
+url = "https://test-coresystems.pmx.online/"
 db_name = "Master"
 db_user = "yusuf@wibtec.com"
 db_pwd = "yusuf_pass"
