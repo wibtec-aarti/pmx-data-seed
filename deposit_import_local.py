@@ -10,10 +10,10 @@ import string
 
 logging.basicConfig(level=logging.INFO)
 
-dbname = "pmx_seed_v16"
+dbname = "v16_PMX_07_03_2024"
 
 # Path to the CSV file
-csv_file = "/home/odoo/Documents/PP-1231/deposits/deposit.csv"
+csv_file = "/home/odoo/Documents/wibtec/PP-1231/deposit/file_chunks/chunk_1.csv"
 
 # Record the start time
 start_time = time.time()
@@ -32,7 +32,7 @@ try:
         logging.info(f"Size of reader: {len(reader)}")
         deposit_data = []
         num = 0
-        batch_size = 1000
+        batch_size = 100
 
         for index in range(0, len(reader), batch_size):
             batch = reader[index: index + batch_size]
@@ -103,10 +103,7 @@ try:
                     )
                     cur.executemany(insert_query, values)
                     deposit_data = []
-
-                if num == 5000:
-                    break
-
+                    conn.commit()
 except psycopg2.Error as e:
     logging.error(f"Error: Unable to import data\n{e}")
 finally:

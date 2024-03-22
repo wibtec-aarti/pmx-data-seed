@@ -7,134 +7,143 @@ from datetime import datetime, date
 import pandas as pd
 import random
 import string
+import os
 
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 
+
+# Path to the CSV file for logging errors
+LOG_FILE = "/home/odoo/Documents/wibtec/PP-1231/trades/trades_log_file.csv"
+LOG_FILE_HEADER = ["file_name", "chunk_range", "error"]
+
+# Function to write error records to CSV
+def write_error_to_csv(file_name, chunk_range, error_message):
+	print("\n\n write_error_to_csv >>>>>>>>",file_name, chunk_range, error_message)
+	with open(LOG_FILE, mode='a',newline='') as csvfile:
+		writer = csv.DictWriter(csvfile, fieldnames=LOG_FILE_HEADER)
+		print([file_name, chunk_range, error_message])
+		writer.writerow({"file_name": file_name, "chunk_range": chunk_range, "error": error_message})
+
+#Database connection parameter 
 dbname = "v16_PMX_07_03_2024"
 
-# Path to the CSV file
-csv_file = "/home/odoo/Documents/wibtec/PP-1231/trades/file_chunks/chunk_1.csv"
+# Define directory 
+DIR_PATH = "/home/odoo/Documents/wibtec/PP-1231/trades/file_chunks"
+csv_files_name_list = os.listdir(DIR_PATH)
+csv_files_name_list.sort()
 
-# Record the start time
-start_time = time.time()
-
-# Establish connection to the database
 try:
 	conn = psycopg2.connect(dbname=dbname)
 	logging.info("\nConnection established successfully!\n")
-	
-	# Create a cursor
 	cur = conn.cursor()
-	
-	# Read data from CSV and insert into the database
-	with open(csv_file, "r", encoding="latin1") as file:
-		reader = list(csv.DictReader(file))
-		logging.info(f"Size of reader: {len(reader)}")
-		trade_data = []
-		num = 0
-		batch_size = 1000
 
-		for index in range(0, len(reader), batch_size):
-			batch = reader[index : index + batch_size]
+	cur.execute("SELECT old_fs_client_id, id, company_id, pmx_id FROM fs_client")
+	fs_client_ref = {
+		"%s" % old_fs_client_id: [new_id, company_id, pmx_id]
+		for old_fs_client_id, new_id, company_id, pmx_id in cur.fetchall()
+	}
 
-			for row in batch:
-				num += 1
-				logging.info(f"Row Number {num} & Trade record ID {row['id']}")
+	for file_name in csv_files_name_list:
+		file_dir_path = "%s/%s" % (DIR_PATH, file_name)
+		logging.info(f"Processing file: {file_name}")
+		
+		# Record the start time
+		start_time = time.time()
 
-				cur.execute(f"SELECT * FROM trade WHERE id = {row['id']}")
-				existing_trade_record = cur.fetchone()
-				# logging.info(f"\nExisting Trade Record {existing_trade_record}")
-				
-				if not existing_trade_record:
-					trade_pmx_vals = {
-						"id": row["id"] if row["id"] else None,
-						"create_date": row["create_date"] if row["create_date"] else None,
-						"write_date": row["write_date"] if row["write_date"] else None,
-						"account_id": row["x_accountid"] if row["x_accountid"] else None,
-						"commission": row["x_commission"] if row["x_commission"] else 0.0,
-						"commission_euro": row["x_commissioneur"]
-						if row["x_commissioneur"]
-						else 0.0,
-						"created_at": row["x_datetime"] if row["x_datetime"] else None,
-						"fee": row["x_fee"] if row["x_fee"] else None,
-						"fee_rate": row["x_feerate"] if row["x_feerate"] else None,
-						"source_currency": row["x_instrument"]
-						if row["x_instrument"]
-						else None,
-						"price": row["x_price"] if row["x_price"] else None,
-						"matched_quantity": row["x_quantity"]
-						if row["x_quantity"]
-						else None,
-						"size": row["x_size"] if row["x_size"] else None,
-						"time": row["x_time"]
-						if row["x_time"]
-						else datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-						"trade_type": row["x_type"] if row["x_type"] else None,
-						"amount_currency": row["x_amount_currency"]
-						if row["x_amount_currency"]
-						else None,
-						"country_of_residence": row["x_studio_country_of_residence"]
-						if row["x_studio_country_of_residence"]
-						else None,
-						"active": row["x_studio_active"]
-						if row["x_studio_active"]
-						else None,
-						"fee_amount": row["x_feeamount"] if row["x_feeamount"] else None,
-						"fee_amount_euro": row["x_feeamounteuro"]
-						if row["x_feeamounteuro"]
-						else None,
-						"exchange_rate": row["x_instrument_rate"]
-						if row["x_instrument_rate"]
-						else None,
-						"username": row["x_name"] if row["x_name"] else None,
-						"pmx_id": row["x_name"] if row["x_name"] else None,
-					}
-					if row["x_client"]:
-						cur.execute(
-							"SELECT id, company_id, pmx_id FROM fs_client WHERE old_fs_client_id = %s",
-							(row["x_client"],),
-						)
+		# Read data from CSV and insert into the database
+		with open(file_dir_path, "r", encoding="utf-8") as file:
+			reader = list(csv.DictReader(file))
+			trade_data = []
+			trade_pmx_vals = {}
+			batch_size = 50
+			num = 0
+			counter = 0
+			print("\n\n len(reader)::", len(reader))
 
-						fs_client_record = cur.fetchone()
-						if fs_client_record:
+			for index in range(0, len(reader), batch_size):
+				batch = reader[index : index + batch_size]
+				counter = index
+				print("index", index)
+				print("counter", counter)
+				print("batch", len(batch))
+
+				for row in batch:
+					num += 1
+					logging.info(f"Processing file {file_name}: Row Number {num} : Trade record ID {row['id']}")
+					cur.execute(f"SELECT * FROM trade WHERE id = {row['id']}")
+					existing_trade_record = cur.fetchone()
+					
+					if not existing_trade_record:
+						trade_pmx_vals = {
+							"id": row.get('id'),
+							"create_date": row.get("create_date"),
+							"write_date": row.get("write_date"),
+							"account_id": row.get("x_accountid"),
+							"commission": row["x_commission"] if row["x_commission"] else 0.0,
+							"commission_euro": row["x_commissioneur"] if row["x_commissioneur"] else 0.0,
+							"created_at": row.get("x_datetime"),
+							"fee": row.get("x_fee"),
+							"fee_rate": row.get("x_feerate"),
+							"source_currency": row.get("x_instrument"),
+							"price": row.get("x_price"),
+							"matched_quantity": row.get("x_quantity"),
+							"size": row.get("x_size"),
+							"time": row["x_time"] if row["x_time"] else datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+							"trade_type": row.get("x_type"),
+							"amount_currency": row.get("x_amount_currency"),
+							"country_of_residence": row.get("x_studio_country_of_residence"),
+							"active": row.get("x_studio_active"),
+							"fee_amount": row.get("x_feeamount"),
+							"fee_amount_euro": row.get("x_feeamounteuro"),
+							"exchange_rate": row.get("x_instrument_rate"),
+							"username": row.get("x_name"),
+							"pmx_id": row.get("x_name")
+						}
+						if row["x_client"] in fs_client_ref.keys():
 							trade_pmx_vals.update(
 								{
-									"fs_client_id": fs_client_record[0],
-									"company_id": fs_client_record[1],
-									"client_pmx_id": fs_client_record[2],
+									"fs_client_id": fs_client_ref[row["x_client"]][0],
+									"old_fs_client_id": fs_client_ref[row["x_client"]][0],
+									"company_id": fs_client_ref[row["x_client"]][1],
+									"client_pmx_id": fs_client_ref[row["x_client"]][2]
 								}
 							)
-
-					#Random string   
-					random_string = "".join(
-						random.choices(string.ascii_lowercase + string.digits, k=8)
+						#Generate Random String
+						random_string = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
+						domain = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+						sub_domain = "".join(random.choices(string.ascii_lowercase, k=2))
+						client_pmx_id = (f"{'user'}|{random_string}@{domain}.{sub_domain}")
+						trade_pmx_vals["client_pmx_id"] = client_pmx_id
+						trade_data.append(trade_pmx_vals)
+				if trade_data:
+					columns = trade_data[0].keys()
+					values = [tuple(item.get(column) for column in columns)for item in trade_data]
+					insert_query = sql.SQL("INSERT INTO trade ({}) VALUES ({})").format(
+						sql.SQL(", ").join(map(sql.Identifier, columns)),
+						sql.SQL(", ").join(sql.Placeholder() * len(columns)),
 					)
-					domain = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
-					sub_domain = "".join(random.choices(string.ascii_lowercase, k=2))
-					client_pmx_id = f"{'user'}|{random_string}@{domain}.{sub_domain}"
-					trade_pmx_vals["client_pmx_id"] = client_pmx_id
-					trade_data.append(trade_pmx_vals)
-			
-			columns = trade_data[0].keys()
-			values = [tuple(item.get(column) for column in columns) for item in trade_data]
-			insert_query = sql.SQL("INSERT INTO trade ({}) VALUES ({})").format(
-				sql.SQL(', ').join(map(sql.Identifier, columns)),
-				sql.SQL(', ').join(sql.Placeholder() * len(columns))
-			)
-			cur.executemany(insert_query, values)
-			trade_data = []
+					trade_data = []
+					try: 
+						cur.executemany(insert_query, values)
+						conn.commit()
+						write_error_to_csv(file_name, f"{counter+1}-{num}", 'N/A')
+					except psycopg2.Error as e:
+						conn.rollback()
+						error_message = f"Error: Unable to import data from file {file_name}, batch {num}. Error: {e}"
+						# Write the error message to the CSV file
+						write_error_to_csv(file_name, f"{num}", error_message)
+						continue
 
-except psycopg2.Error as e:
-	logging.error(f"Error: Unable to import data\n{e}")
+		# Calculate End time
+		end_time = time.time()
+		execution_duration = end_time - start_time
+		execution_duration_minutes = execution_duration / 60
+		print(f"\n\n\n\n Time taken: {execution_duration:.2f} minutes")
+		# os.remove(file_dir_path)
 finally:
 	if conn is not None:
 		conn.commit()
 		cur.close()
 		conn.close()
 		logging.info("\n\nConnection closed.")
-
-# Calculate End time
-end_time = time.time()
-execution_duration = end_time - start_time
-execution_duration_minutes = execution_duration / 60
-print(f"\nTime taken: {execution_duration_minutes:.2f} minutes")
