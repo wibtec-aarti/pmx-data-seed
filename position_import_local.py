@@ -17,7 +17,7 @@ script_start_time = time.time()
 
 
 # Path to the CSV file for logging errors
-LOG_FILE = "/home/odoo/Documents/wibtec/PP-1231/withdraws/withdraws_log_file.csv"
+LOG_FILE = "/home/odoo/Documents/wibtec/PP-1231/positions/positions_log_file.csv"
 LOG_FILE_HEADER = ["file_name", "chunk_range", "record_id", "error"]
 
 # Function to write error records to CSV
@@ -33,7 +33,7 @@ def write_error_to_csv(file_name, chunk_range, record_id, error_message):
 dbname = "v16_PMX_07_03_2024"
 
 # Define directory 
-DIR_PATH = "/home/odoo/Documents/wibtec/PP-1231/withdraws/file_chunks"
+DIR_PATH = "/home/odoo/Documents/wibtec/PP-1231/positions/file_chunks"
 csv_files_name_list = os.listdir(DIR_PATH)
 csv_files_name_list.sort()
 
@@ -59,8 +59,8 @@ try:
         # Read data from CSV and insert into the database
         with open(file_dir_path, "r", encoding="utf-8") as file:
             reader = list(csv.DictReader(file))
-            withdrawal_data = []
-            withdrawal_pmx_vals = {}
+            positions_data = []
+            positions_pmx_vals = {}
             batch_size = 1000
             num = 0
             counter = 0
@@ -71,37 +71,31 @@ try:
                     try:
                         num += 1
                         current_row_id = row.get('id')
-                        logging.info(f"Processing file {file_name} : Row Number {num} : withdrawal Record ID {current_row_id}")
-                        cur.execute(f"SELECT * FROM withdrawal WHERE id = {current_row_id}")
-                        existing_withdrawal_record = cur.fetchone()
+                        logging.info(f"Processing file {file_name} : Row Number {num} : position Record ID {current_row_id}")
+                        cur.execute(f"SELECT * FROM position WHERE id = {current_row_id}")
+                        existing_position_record = cur.fetchone()
 
-                        if not existing_withdrawal_record:
-                            withdrawal_pmx_vals = {
-                                "id": row.get('id'),
+                        if not existing_position_record:
+                            position_pmx_vals = {
+                                "id": row.get("id"),
                                 "create_date": row.get("create_date"),
                                 "write_date": row.get("write_date"),
                                 "pmx_id": row.get("x_FTXID"),
                                 "account_id": row.get("x_accountid"),
                                 "usd_value": row.get("x_amount"),
                                 "amount_currency": row.get("x_amount_currency"),
-                                "approved_deposit": row.get("x_approved_deposit"),
-                                "bank": row.get("x_bank"),
-                                "created_at": row.get("x_createdat"),
                                 "currency_id": row.get("x_currency_id"),
-                                "fee": row.get("x_fee"),
-                                "fiat": row.get("x_fiat"),
+                                "eur_value": row.get("x_eurvalue"),
                                 "instrument": row.get("x_instrument"),
                                 "exchange_rate": row.get("x_instrument_rate"),
-                                "received_at": row.get("x_receivedat"),
-                                "reversed_at": row.get("x_reversedat"),
-                                "size": row.get("x_size"),
+                                "market": row.get("x_market"),
+                                "size": row.get("x_position_size"),
                                 "active": row.get("x_studio_active"),
                                 "country_of_residence": row.get("x_studio_country_of_residence"),
-                                "time": row.get("x_time"),
-                                "username": row.get("x_username")
+                                "type": row.get("x_type"),
                             }
                             if row["x_client"] in fs_client_ref.keys():
-                                withdrawal_pmx_vals.update(
+                                position_pmx_vals.update(
                                     {
                                         "fs_client_id": fs_client_ref[row["x_client"]][0],
                                         "old_fs_client_id": fs_client_ref[row["x_client"]][0],
@@ -114,17 +108,17 @@ try:
                             domain = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
                             sub_domain = "".join(random.choices(string.ascii_lowercase, k=2))
                             client_pmx_id = (f"{'user'}|{random_string}@{domain}.{sub_domain}")
-                            withdrawal_pmx_vals["client_pmx_id"] = client_pmx_id
-                            withdrawal_data.append(withdrawal_pmx_vals)
+                            position_pmx_vals["client_pmx_id"] = client_pmx_id
+                            positions_data.append(position_pmx_vals)
 
-                        if withdrawal_data:
-                            columns = withdrawal_data[0].keys()
-                            values = [tuple(item.get(column) for column in columns)for item in withdrawal_data]
-                            insert_query = sql.SQL("INSERT INTO withdrawal ({}) VALUES ({})").format(
+                        if positions_data:
+                            columns = positions_data[0].keys()
+                            values = [tuple(item.get(column) for column in columns)for item in positions_data]
+                            insert_query = sql.SQL("INSERT INTO position ({}) VALUES ({})").format(
                                 sql.SQL(", ").join(map(sql.Identifier, columns)),
                                 sql.SQL(", ").join(sql.Placeholder() * len(columns)),
                             )
-                            withdrawal_data = []
+                            positions_data = []
                             cur.executemany(insert_query, values)
                             conn.commit()
                     except psycopg2.Error as error:
