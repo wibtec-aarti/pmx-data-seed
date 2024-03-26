@@ -20,6 +20,22 @@
 5) Balance: 2,21,01,978 :
 6) Positions: 1,82,96,479 :
 
-# Trades 
-1) Execute the trade_import_local.py file local db 
-2) Execute the trade_import_server.py file server db  
+# Trades (2,05,12,688)
+1) Execute the trade_import_local.py file for local db 
+2) Execute the trade_import_server.py file for server db  
+
+# Deposite (3,41,843)
+1) Execute the deposite_import_local.py file for local db 
+2) Execute the deposite_import_server.py file for server db  
+
+# Withdraws (1,70,823)
+1) Execute the withdraws_import_local.py file for local db 
+2) Execute the withdraws_import_server.py file for server db  
+
+# Balance (2,21,01,978)
+1) Execute the balance_import_local.py file for local db 
+2) Execute the balance_import_server.py file for server db  
+
+# Positions (1,82,96,479)
+1) Execute the positions_import_local.py file for local db 
+2) Execute the positions_import_server.py file for server db  
