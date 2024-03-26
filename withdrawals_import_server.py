@@ -80,7 +80,7 @@ try:
                         existing_withdrawal_record = cur.fetchone()
 
                         if not existing_withdrawal_record:
-                           withdrawal_pmx_vals = {
+                            withdrawal_pmx_vals = {
                                 "id": current_row_id,
                                 "create_date": row["create_date"] if row["create_date"] else None,
                                 "write_date": row["write_date"] if row["write_date"] else None,
