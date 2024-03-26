@@ -17,7 +17,7 @@ script_start_time = time.time()
 
 
 # Path to the CSV file for logging errors
-LOG_FILE = "/home/odoo/Documents/wibtec/PP-1231/positions/positions_log_file.csv"
+LOG_FILE = "/opt/odoo/ftx_data/positions/positions_log_file.csv"
 LOG_FILE_HEADER = ["file_name", "chunk_range", "record_id", "error"]
 
 # Function to write error records to CSV
@@ -30,15 +30,19 @@ def write_error_to_csv(file_name, chunk_range, record_id, error_message):
 		writer.writerow({"file_name": file_name, "chunk_range": chunk_range, "record_id": record_id, "error": error_message})
 
 #Database connection parameter 
-dbname = "v16_PMX_07_03_2024"
+dbname = "Master"
+user = "odoo"
+password = "AVNS_0byMv122u7uygOUkk4A"
+host = "private-test-pmx-coresystems-do-user-2412463-0.c.db.ondigitalocean.com"
+port = "25060"
 
 # Define directory 
-DIR_PATH = "/home/odoo/Documents/wibtec/PP-1231/positions/file_chunks"
+DIR_PATH = "/opt/odoo/ftx_data/positions/file_chunks"
 csv_files_name_list = os.listdir(DIR_PATH)
 csv_files_name_list.sort()
 
 try:
-	conn = psycopg2.connect(dbname=dbname)
+	conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
 	logging.info("\nConnection established successfully!\n")
 	cur = conn.cursor()
 
