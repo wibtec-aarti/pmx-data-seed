@@ -136,7 +136,7 @@ try:
         execution_duration = end_time - start_time
         execution_duration_minutes = execution_duration / 60
         logging.info(f"\n\n\n\n {file_name} Time taken : {execution_duration:.2f} minutes")
-        # os.remove(file_dir_path)
+        os.remove(file_dir_path)
 finally:
     if conn is not None:
         conn.commit()
