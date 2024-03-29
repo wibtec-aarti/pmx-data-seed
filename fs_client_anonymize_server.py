@@ -36,9 +36,13 @@ def write_error_to_csv(batch, record_id, error_message):
 
 try:
     # Database connection parameter
-    dbname = "v16_PMX_07_03_2024"
+    dbname = "Master"
+    user = "odoo"
+    password = "AVNS_0byMv122u7uygOUkk4A"
+    host = "private-test-pmx-coresystems-do-user-2412463-0.c.db.ondigitalocean.com"
+    port = "25060"
 
-    conn = psycopg2.connect(dbname=dbname)
+    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
     logging.info("\nConnection established successfully!\n")
     cur = conn.cursor()
 
