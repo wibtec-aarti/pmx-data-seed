@@ -15,7 +15,7 @@ fake = Faker()
 script_start_time = time.time()
 
 # Path to the CSV file for logging errors
-LOG_FILE = ("/home/odoo/Documents/wibtec/PP-1231/fs_client/fs_client_update_log_file.csv")
+LOG_FILE = ("/opt/odoo/ftx_data/fs_client_update_log_file.csv")
 LOG_FILE_HEADER = ["batch", "record_id", "error"]
 
 
