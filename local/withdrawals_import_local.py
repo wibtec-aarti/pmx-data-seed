@@ -17,7 +17,7 @@ script_start_time = time.time()
 
 
 # Path to the CSV file for logging errors
-LOG_FILE = "/home/odoo/Documents/wibtec/PP-1231/withdraws/withdraws_log_file.csv"
+LOG_FILE = "/home/odoo/Documents/wibtec/PP-1231/withdrawal/withdraws_log_file.csv"
 LOG_FILE_HEADER = ["file_name", "chunk_range", "record_id", "error"]
 
 # Function to write error records to CSV
@@ -33,7 +33,7 @@ def write_error_to_csv(file_name, chunk_range, record_id, error_message):
 dbname = "v16_PMX_07_03_2024"
 
 # Define directory 
-DIR_PATH = "/home/odoo/Documents/wibtec/PP-1231/withdraws/file_chunks"
+DIR_PATH = "/home/odoo/Documents/wibtec/PP-1231/withdrawal/file_chunks"
 csv_files_name_list = os.listdir(DIR_PATH)
 csv_files_name_list.sort()
 

@@ -39,3 +39,12 @@
 # Positions (1,82,96,479)
 1) Execute the positions_import_local.py file for local db 
 2) Execute the positions_import_server.py file for server db  
+
+# Update FS client data 
+1) Excute the fs_client_anonymize script before excute script update the all pmx_id in fs clients
+UPDATE PMX_ID : update fs_client set pmx_id = ''; 
+
+# Update PMX ID data of trade, deposite, withdraws, Balance and Positions
+Remove unique CONSTRAINT of pmx id and update pmx id 
+Excute the anonymize script 
+
