@@ -40,9 +40,10 @@ port = "25060"
 DIR_PATH = "/opt/odoo/2086_seed_data/balance/file_chunks/"
 csv_files_name_list = os.listdir(DIR_PATH)
 csv_files_name_list.sort()
+conn = None
 
 try:
-    conn = psycopg2.connect(dbname=dbname)
+    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host, port=port)
     logging.info("\nConnection established successfully!\n")
     cur = conn.cursor()
 
@@ -112,6 +113,8 @@ try:
         execution_duration_minutes = execution_duration / 60
         logging.info(f"\n\n\n\n {file_name} Time taken : {execution_duration:.2f} minutes")
         # os.remove(file_dir_path)
+except psycopg2.Error as e:
+    logging.error(f"Database connection failed: {e}")
 finally:
     if conn is not None:
         conn.commit()
